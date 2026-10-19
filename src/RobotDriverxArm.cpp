@@ -204,20 +204,24 @@ void RobotDriverxArm::validateCommand(const char * operation, const std::vector<
 
 } // namespace xarm_driver
 
+// Lets robot_interface refuse this plugin (instead of crashing) once the
+// RobotDriver interface changes and the plugin needs a rebuild.
+ROBOT_DRIVER_EXPORT_ABI_VERSION()
+
 extern "C"
 {
 
-  void MC_RTC_ROBOT_DRIVER(std::vector<std::string> & classes)
+  void ROBOT_DRIVER_PLUGIN(std::vector<std::string> & classes)
   {
     classes.push_back("RobotDriverxArm");
   }
 
-  mc_robot_interface::RobotDriver * create(const std::string &, const std::string & ip, const uint16_t & port)
+  robot_interface::RobotDriver * create(const std::string &, const std::string & ip, const uint16_t & port)
   {
     return new xarm_driver::RobotDriverxArm(ip, port);
   }
 
-  void destroy(mc_robot_interface::RobotDriver * driver)
+  void destroy(robot_interface::RobotDriver * driver)
   {
     delete driver;
   }

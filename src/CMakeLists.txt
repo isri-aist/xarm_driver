@@ -1,7 +1,7 @@
-if(NOT TARGET mc_robot_interface::robot_driver_api)
+if(NOT TARGET unified_robot_interface::robot_driver_api)
   message(
     FATAL_ERROR
-      "Required target mc_robot_interface::robot_driver_api is unavailable"
+      "Required target robot_interface::robot_driver_api is unavailable"
   )
 endif()
 
@@ -20,7 +20,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-  RobotDriverxArm PUBLIC mc_robot_interface::robot_driver_api
+  RobotDriverxArm PUBLIC unified_robot_interface::robot_driver_api
 )
 
 target_link_libraries(RobotDriverxArm PRIVATE fmt::fmt xarm_sdk)
