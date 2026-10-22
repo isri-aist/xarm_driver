@@ -15,6 +15,7 @@ namespace
 
 constexpr std::size_t max_xarm_dof = 7;
 constexpr std::size_t min_xarm_dof = 5;
+constexpr fp32 velocity_command_timeout = 0.05f;
 
 } // namespace
 
@@ -142,44 +143,45 @@ void RobotDriverxArm::servoJ(const std::vector<double> & q)
 
   std::array<fp32, max_xarm_dof> command{};
 
-  for(std::size_t i = 0; i < dof_; ++i)
-  {
-    command[i] = static_cast<fp32>(q[i]);
-  }
+  std::transform(q.begin(), q.end(), command.begin(), [](double value) { return static_cast<fp32>(value); });
 
-  checkReturnCode("set_servo_angle_j", arm_->set_servo_angle_j(command.data()));
+  const int code = arm_->set_servo_angle_j(command.data());
+
+  if(code != 0)
+  {
+    throw std::runtime_error(
+        "[RobotDriverxArm] "
+        "set_servo_angle_j failed with code "
+        + std::to_string(code)
+        + "\nMore details at https://github.com/xArm-Developer/xArm-CPLUS-SDK/blob/master/doc/xarm_api_code.md");
+  }
 }
 
-void RobotDriverxArm::speedJ(const std::vector<double> &)
+void RobotDriverxArm::speedJ(const std::vector<double> & velocity)
 {
-  throw std::runtime_error("[RobotDriverxArm] speedJ is not supported by the current "
-                           "joint-position driver");
+  validateCommand("speedJ", velocity);
+
+  std::array<fp32, max_xarm_dof> command{};
+
+  std::transform(velocity.begin(), velocity.end(), command.begin(),
+                 [](double value) { return static_cast<fp32>(value); });
+
+  const int code = arm_->vc_set_joint_velocity(command.data(), true, 0.05f);
+
+  if(code != 0)
+  {
+    throw std::runtime_error(
+        "[RobotDriverxArm] "
+        "vc_set_joint_velocity failed with code "
+        + std::to_string(code)
+        + "\nMore details at https://github.com/xArm-Developer/xArm-CPLUS-SDK/blob/master/doc/xarm_api_code.md");
+  }
 }
 
 void RobotDriverxArm::tauJ(const std::vector<double> &)
 {
-  throw std::runtime_error("[RobotDriverxArm] tauJ is not supported because xarm torque-command "
-                           "support has not been verified");
-}
-
-void RobotDriverxArm::checkReturnCode(const char * operation, int return_code) const
-{
-  if(return_code == 0)
-  {
-    return;
-  }
-
-  int error_warning[2] = {-1, -1};
-
-  if(arm_ && arm_->is_connected())
-  {
-    arm_->get_err_warn_code(error_warning);
-  }
-
-  throw std::runtime_error(fmt::format("[RobotDriverxArm] {} failed: return_code={}, error_code={}, "
-                                       "warn_code={}, mode={}, state={}, connected={}",
-                                       operation, return_code, error_warning[0], error_warning[1],
-                                       arm_ ? arm_->mode : -1, arm_ ? arm_->state : -1, arm_ && arm_->is_connected()));
+  throw std::runtime_error("[RobotDriverxArm] tauJ is not supported. Read more at "
+                           "https://github.com/xArm-Developer/xArm-CPLUS-SDK/issues/18");
 }
 
 void RobotDriverxArm::validateCommand(const char * operation, const std::vector<double> & command) const
@@ -190,15 +192,13 @@ void RobotDriverxArm::validateCommand(const char * operation, const std::vector<
         fmt::format("[RobotDriverxArm] {} expected {} joint values, received {}", operation, dof_, command.size()));
   }
 
-  const auto invalid_value =
-      std::find_if(command.begin(), command.end(), [](double value) { return !std::isfinite(value); });
-
-  if(invalid_value != command.end())
+  for(std::size_t i = 0; i < command.size(); ++i)
   {
-    const auto index = static_cast<std::size_t>(std::distance(command.begin(), invalid_value));
-
-    throw std::invalid_argument(
-        fmt::format("[RobotDriverxArm] {} received a non-finite value at joint {}", operation, index));
+    if(!std::isfinite(command[i]))
+    {
+      throw std::invalid_argument(
+          fmt::format("[RobotDriverxArm] {} received a non-finite value at joint {}", operation, i));
+    }
   }
 }
 
