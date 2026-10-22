@@ -1,0 +1,22 @@
+MainRobot: xArm7
+Enabled: Posture
+Timestep: 0.001
+
+LogPolicy : threaded
+
+Robots:
+  xarm7:
+    module: xArm7
+    interface: interface_template
+    robot_interface:
+      driver: RobotDriverxArm
+      control_mode: position
+      ip: "local-host"
+      port: 0
+      autostart: true
+
+  xarm7_2:
+    base: xarm7
+    robot_interface:
+      ip: "local-host"
+

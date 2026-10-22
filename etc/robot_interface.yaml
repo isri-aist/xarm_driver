@@ -1,0 +1,10 @@
+name: xArm7
+
+robot_interface:
+  driver: RobotDriverxArm
+  ip: "local-host"
+  port: 0
+
+network_interface:
+  protocol: zenoh
+  latency_stats: false
