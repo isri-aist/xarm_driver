@@ -36,8 +36,6 @@ public:
   void tauJ(const std::vector<double> & torque) override;
 
 private:
-  void checkReturnCode(const char * operation, int return_code) const;
-
   void validateCommand(const char * operation, const std::vector<double> & command) const;
 
 private:
