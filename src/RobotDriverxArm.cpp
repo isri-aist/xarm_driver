@@ -150,31 +150,26 @@ void RobotDriverxArm::servoJ(const std::vector<double> & q)
   checkReturnCode("set_servo_angle_j", arm_->set_servo_angle_j(command.data()));
 }
 
-void RobotDriverxArm::speedJ(const std::vector<double> &)
+void RobotDriverxArm::speedJ(const std::vector<double> & velocity)
 {
-  throw std::runtime_error("[RobotDriverxArm] speedJ is not supported by the current "
-                           "joint-position driver");
-}
+  validateCommand("speedJ", velocity);
 
-void RobotDriverxArm::tauJ(const std::vector<double> &)
-{
-  throw std::runtime_error("[RobotDriverxArm] tauJ is not supported because xarm torque-command "
-                           "support has not been verified");
-}
+  std::array<fp32, max_xarm_dof> command{};
 
-void RobotDriverxArm::checkReturnCode(const char * operation, int return_code) const
-{
-  if(return_code == 0)
+  std::transform(velocity.begin(), velocity.end(), command.begin(),
+                 [](double value) { return static_cast<fp32>(value); });
+
+  const int code = arm_->vc_set_joint_velocity(command.data(), true, 0.05f);
+
+  if(code != 0)
   {
-    return;
+    throw std::runtime_error(
+        "[RobotDriverxArm] "
+        "vc_set_joint_velocity failed with code "
+        + std::to_string(code)
+        + "\nMore details at https://github.com/xArm-Developer/xArm-CPLUS-SDK/blob/master/doc/xarm_api_code.md");
   }
-
-  int error_warning[2] = {-1, -1};
-
-  if(arm_ && arm_->is_connected())
-  {
-    arm_->get_err_warn_code(error_warning);
-  }
+}
 
   throw std::runtime_error(fmt::format("[RobotDriverxArm] {} failed: return_code={}, error_code={}, "
                                        "warn_code={}, mode={}, state={}, connected={}",
