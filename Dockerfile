@@ -50,7 +50,7 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
     && cmake --build /tmp/xarm_driver/build --parallel "$(nproc)" \
     && cmake --install /tmp/xarm_driver/build \
     && mkdir -p /config "${URI_PREFIX}/share/xarm_driver" \
-    && cp -r /tmp/xarm_driver/etc/. "${URI_PREFIX}/share/xarm_driver/"; \
+    && cp -r /tmp/xarm_driver/etc/. "${URI_PREFIX}/share/xarm_driver/" \
     && rm -rf /tmp/xarm_driver \
     && test -f "${URI_PREFIX}/lib/robot_interface/libRobotDriverxArm.so"
 
