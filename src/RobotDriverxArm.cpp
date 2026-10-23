@@ -1,3 +1,4 @@
+#include <string>
 #include <xarm_driver/RobotDriverxArm.h>
 
 #include <xarm/wrapper/xarm_api.h>
@@ -145,16 +146,7 @@ void RobotDriverxArm::servoJ(const std::vector<double> & q)
 
   std::transform(q.begin(), q.end(), command.begin(), [](double value) { return static_cast<fp32>(value); });
 
-  const int code = arm_->set_servo_angle_j(command.data());
-
-  if(code != 0)
-  {
-    throw std::runtime_error(
-        "[RobotDriverxArm] "
-        "set_servo_angle_j failed with code "
-        + std::to_string(code)
-        + "\nMore details at https://github.com/xArm-Developer/xArm-CPLUS-SDK/blob/master/doc/xarm_api_code.md");
-  }
+  checkReturnCode("set_servo_angle_j", arm_->set_servo_angle_j(command.data()));
 }
 
 void RobotDriverxArm::speedJ(const std::vector<double> & velocity)
@@ -166,22 +158,24 @@ void RobotDriverxArm::speedJ(const std::vector<double> & velocity)
   std::transform(velocity.begin(), velocity.end(), command.begin(),
                  [](double value) { return static_cast<fp32>(value); });
 
-  const int code = arm_->vc_set_joint_velocity(command.data(), true, 0.05f);
-
-  if(code != 0)
-  {
-    throw std::runtime_error(
-        "[RobotDriverxArm] "
-        "vc_set_joint_velocity failed with code "
-        + std::to_string(code)
-        + "\nMore details at https://github.com/xArm-Developer/xArm-CPLUS-SDK/blob/master/doc/xarm_api_code.md");
-  }
+  checkReturnCode("set_servo_angle_j", arm_->vc_set_joint_velocity(command.data(), true, 0.05f));
 }
 
 void RobotDriverxArm::tauJ(const std::vector<double> &)
 {
   throw std::runtime_error("[RobotDriverxArm] tauJ is not supported. Read more at "
                            "https://github.com/xArm-Developer/xArm-CPLUS-SDK/issues/18");
+}
+
+void RobotDriverxArm::checkReturnCode(const char * operation, int return_code) const
+{
+  if(return_code == 0)
+  {
+    return;
+  }
+
+  throw std::runtime_error(fmt::format(
+      "[RobotDriverxArm] {} failed with code {}. See the xArm SDK API code documentation.", operation, return_code));
 }
 
 void RobotDriverxArm::validateCommand(const char * operation, const std::vector<double> & command) const
