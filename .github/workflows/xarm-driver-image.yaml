@@ -2,7 +2,7 @@ name: Build and publish xarm_driver image
 
 on:
   push:
-    branches: [workflows]
+    branches: [main]
   pull_request:
   workflow_dispatch: {}
 
