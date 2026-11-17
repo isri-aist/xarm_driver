@@ -10,6 +10,7 @@ if(NOT TARGET xarm_sdk)
 endif()
 
 add_library(RobotDriverxArm SHARED RobotDriverxArm.cpp)
+add_robot_driver(RobotDriverxArm)
 
 target_compile_features(RobotDriverxArm PUBLIC cxx_std_17)
 
