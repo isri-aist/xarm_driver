@@ -1,6 +1,7 @@
 #pragma once
 
 #include <robot_interface/RobotDriverTemplate.h>
+#include <robot_interface/driver/GripperInfo.h>
 
 #include <cstdint>
 #include <memory>
@@ -61,7 +62,9 @@ extern "C"
 
   ROBOT_DRIVER_DLLAPI robot_interface::RobotDriver * create(const std::string & name,
                                                             const std::string & ip,
-                                                            const uint16_t & port);
+                                                            const uint16_t & port,
+                                                            const std::string & config_path,
+                                                            const std::vector<robot_interface::GripperInfo> & grippers);
 
   ROBOT_DRIVER_DLLAPI void destroy(robot_interface::RobotDriver * driver);
 }

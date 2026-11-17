@@ -210,7 +210,11 @@ extern "C"
     classes.push_back("RobotDriverxArm");
   }
 
-  robot_interface::RobotDriver * create(const std::string &, const std::string & ip, const uint16_t & port)
+  robot_interface::RobotDriver * create(const std::string & /*name*/,
+                                        const std::string & ip,
+                                        const uint16_t & port,
+                                        const std::string & /*config_path*/,
+                                        const std::vector<robot_interface::GripperInfo> & /*grippers*/)
   {
     return new xarm_driver::RobotDriverxArm(ip, port);
   }
